@@ -17,9 +17,43 @@ WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 WATCHLIST_FILE = "watchlist.json"
 
 SEEN_FILE = "seen_products.json"
+PRICE_FILE = "price_rules.json"
 
 
 def load_seen():
+    prices = load_prices()
+    def check_price(name, price=None):
+
+    if price is None:
+        return "⚪ PRICE UNKNOWN"
+
+    name = name.lower()
+
+    for category, data in prices["categories"].items():
+
+        if category in name:
+
+            if price <= data["msrp"]:
+                return "🟢 AT MSRP"
+
+            elif price <= data["max"]:
+                return "🟡 ACCEPTABLE"
+
+            else:
+                return "🔴 OVER MSRP"
+
+
+    return "⚪ NO DATA"
+def load_prices():
+
+    try:
+        with open(PRICE_FILE) as f:
+            return json.load(f)
+
+    except:
+        return {
+            "categories": {}
+        }
 def load_watchlist():
 
     try:
@@ -105,6 +139,11 @@ def send_alert(product):
                         "inline": True
                     },
                     {
+                        {
+    "name": "💰 Price Check",
+    "value": check_price(product["name"]),
+    "inline": True
+},
                         "name": "📦 Status",
                         "value": "Possible preorder/restock",
                         "inline": False
