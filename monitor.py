@@ -6,7 +6,14 @@ from datetime import datetime
 
 WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
-STORES = [
+SEEN_FILE = "seen_products.json"
+
+
+stores = [
+    {
+        "name": "Pokémon Center",
+        "url": "https://www.pokemoncenter.com/en-us/category/trading-card-game"
+    },
     {
         "name": "Walmart",
         "url": "https://www.walmart.com/search?q=pokemon+cards"
@@ -14,81 +21,112 @@ STORES = [
     {
         "name": "Target",
         "url": "https://www.target.com/s?searchTerm=pokemon+cards"
+    },
+    {
+        "name": "Best Buy",
+        "url": "https://www.bestbuy.com/site/searchpage.jsp?st=pokemon+cards"
     }
 ]
 
-KEYWORDS = [
+
+good_words = [
     "pokemon",
     "elite trainer box",
-    "booster bundle",
-    "booster box",
-    "premium collection",
-    "pokemon center"
+    "etb",
+    "booster",
+    "bundle",
+    "collection",
+    "premium",
+    "box",
+    "tin"
 ]
 
-IGNORE = [
-    "case",
-    "sleeves",
+
+bad_words = [
+    "single",
+    "graded",
+    "psa",
+    "cgc",
     "binder",
-    "protector"
+    "sleeves",
+    "case"
 ]
 
 
-def alert(message):
+def send_alert(message):
     requests.post(
         WEBHOOK,
-        json={"content": message}
+        json={
+            "content": message
+        }
     )
 
 
-def check_store(store):
+def load_seen():
+    try:
+        with open(SEEN_FILE) as f:
+            return json.load(f)
+    except:
+        return []
+
+
+def save_seen(data):
+    with open(SEEN_FILE, "w") as f:
+        json.dump(data, f)
+
+
+seen = load_seen()
+
+
+for store in stores:
 
     try:
+
         r = requests.get(
             store["url"],
             headers={
                 "User-Agent": "Mozilla/5.0"
             },
-            timeout=15
+            timeout=20
         )
 
-        soup = BeautifulSoup(r.text, "lxml")
+        soup = BeautifulSoup(
+            r.text,
+            "lxml"
+        )
+
         text = soup.get_text(" ").lower()
 
-        found = []
+        if any(word in text for word in good_words):
 
-        for word in KEYWORDS:
-            if word in text:
-                found.append(word)
+            if any(word in text for word in bad_words):
+                continue
 
-        for word in IGNORE:
-            if word in text:
-                return
+            product_id = store["name"] + store["url"]
 
-        if found:
-            alert(
+            if product_id not in seen:
+
+                send_alert(
 f"""
-🚨 POKÉMON DROP ALERT 🚨
+🚨 POKÉMON MSRP ALERT 🚨
 
 Store:
 {store['name']}
 
-Possible MSRP product activity detected!
-
-Keywords:
-{', '.join(found)}
+Possible sealed product activity detected!
 
 Link:
 {store['url']}
 
-Time:
+Detected:
 {datetime.now()}
 """
-            )
+                )
+
+                seen.append(product_id)
 
     except Exception as e:
-        print(e)
+        print(store["name"], e)
 
 
-for store in STORES:
-    check_store(store)
+save_seen(seen)
