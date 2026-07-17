@@ -1,0 +1,24 @@
+{
+  "stores": [
+    {
+      "name": "Pokémon Center",
+      "url": "https://www.pokemoncenter.com/en-us/category/trading-card-game"
+    },
+    {
+      "name": "Walmart",
+      "url": "https://www.walmart.com/search?q=pokemon+cards"
+    },
+    {
+      "name": "Target",
+      "url": "https://www.target.com/s?searchTerm=pokemon+cards"
+    },
+    {
+      "name": "Best Buy",
+      "url": "https://www.bestbuy.com/site/searchpage.jsp?st=pokemon+cards"
+    },
+    {
+      "name": "GameStop",
+      "url": "https://www.gamestop.com/search/?q=pokemon+cards"
+    }
+  ]
+}
