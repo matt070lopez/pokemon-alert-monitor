@@ -210,7 +210,7 @@ def send_alert(product, store):
 
                     {
                         "name": "⭐ Priority",
-                        "value": get_priority(product["name"]),
+                       "value": get_priority(product["name"]),
                         "inline": True
                     },
 
