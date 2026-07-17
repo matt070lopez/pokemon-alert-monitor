@@ -1,0 +1,25 @@
+{
+  "max_price": 999,
+  "sealed_keywords": [
+    "pokemon",
+    "elite trainer box",
+    "etb",
+    "booster box",
+    "booster bundle",
+    "premium collection",
+    "collection",
+    "tin",
+    "blister",
+    "box"
+  ],
+  "ignore_keywords": [
+    "single card",
+    "graded",
+    "psa",
+    "cgc",
+    "binder",
+    "sleeves",
+    "protector",
+    "case only"
+  ]
+}
