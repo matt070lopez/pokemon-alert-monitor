@@ -1,1 +1,36 @@
+{
+  "watchlist": [
+    "pokemon 151",
+    "mega evolution",
+    "mega",
+    "elite trainer box",
+    "etb",
+    "booster bundle",
+    "booster box",
+    "pokemon center exclusive",
+    "special collection",
+    "premium collection",
+    "ultra premium collection",
+    "holiday set"
+  ],
 
+  "ignore": [
+    "binder",
+    "sleeves",
+    "deck box",
+    "playmat",
+    "single card",
+    "graded",
+    "psa",
+    "cgc",
+    "toploader",
+    "accessory"
+  ],
+
+  "priority_sets": [
+    "pokemon 151",
+    "mega evolution",
+    "pokemon center exclusive",
+    "ultra premium collection"
+  ]
+}
