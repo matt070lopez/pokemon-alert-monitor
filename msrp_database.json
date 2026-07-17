@@ -1,0 +1,26 @@
+{
+  "flex_percent": 10,
+  "products": {
+    "elite trainer box": {
+      "max_price": 55
+    },
+    "booster bundle": {
+      "max_price": 30
+    },
+    "booster box": {
+      "max_price": 175
+    },
+    "premium collection": {
+      "max_price": 70
+    },
+    "collection": {
+      "max_price": 70
+    },
+    "tin": {
+      "max_price": 35
+    },
+    "blister": {
+      "max_price": 25
+    }
+  }
+}
