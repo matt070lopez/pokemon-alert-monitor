@@ -1,0 +1,19 @@
+{
+  "positive": [
+    "add to cart",
+    "add-to-cart",
+    "buy now",
+    "preorder",
+    "pre-order",
+    "in stock",
+    "available"
+  ],
+
+  "negative": [
+    "out of stock",
+    "sold out",
+    "unavailable",
+    "notify me",
+    "coming soon"
+  ]
+}
