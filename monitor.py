@@ -3,33 +3,16 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from urllib.parse import urljoin
+
 
 WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
 SEEN_FILE = "seen_products.json"
+CONFIG_FILE = "store_config.json"
 
 
-stores = [
-    {
-        "name": "Pokémon Center",
-        "url": "https://www.pokemoncenter.com/en-us/category/trading-card-game"
-    },
-    {
-        "name": "Walmart",
-        "url": "https://www.walmart.com/search?q=pokemon+cards"
-    },
-    {
-        "name": "Target",
-        "url": "https://www.target.com/s?searchTerm=pokemon+cards"
-    },
-    {
-        "name": "Best Buy",
-        "url": "https://www.bestbuy.com/site/searchpage.jsp?st=pokemon+cards"
-    }
-]
-
-
-good_words = [
+KEYWORDS = [
     "pokemon",
     "elite trainer box",
     "etb",
@@ -38,18 +21,18 @@ good_words = [
     "collection",
     "premium",
     "box",
-    "tin"
+    "tin",
+    "blister"
 ]
 
-
-bad_words = [
-    "single",
-    "graded",
-    "psa",
-    "cgc",
+IGNORE = [
     "binder",
     "sleeves",
-    "case"
+    "protector",
+    "single card",
+    "graded",
+    "psa",
+    "cgc"
 ]
 
 
@@ -62,12 +45,12 @@ def send_alert(message):
     )
 
 
-def load_seen():
+def load_json(file):
     try:
-        with open(SEEN_FILE) as f:
+        with open(file) as f:
             return json.load(f)
     except:
-        return []
+        return {}
 
 
 def save_seen(data):
@@ -75,14 +58,15 @@ def save_seen(data):
         json.dump(data, f)
 
 
-seen = load_seen()
+seen = load_json(SEEN_FILE)
+config = load_json(CONFIG_FILE)
 
 
-for store in stores:
+for store in config.get("stores", []):
 
     try:
 
-        r = requests.get(
+        response = requests.get(
             store["url"],
             headers={
                 "User-Agent": "Mozilla/5.0"
@@ -91,18 +75,40 @@ for store in stores:
         )
 
         soup = BeautifulSoup(
-            r.text,
+            response.text,
             "lxml"
         )
 
-        text = soup.get_text(" ").lower()
+        links = soup.find_all("a", href=True)
 
-        if any(word in text for word in good_words):
+        for link in links:
 
-            if any(word in text for word in bad_words):
+            title = link.get_text(" ", strip=True)
+
+            if not title:
                 continue
 
-            product_id = store["name"] + store["url"]
+            title_lower = title.lower()
+
+            if not any(k in title_lower for k in KEYWORDS):
+                continue
+
+            if any(i in title_lower for i in IGNORE):
+                continue
+
+
+            product_url = urljoin(
+                store["url"],
+                link["href"]
+            )
+
+
+            product_id = (
+                store["name"]
+                +
+                product_url
+            )
+
 
             if product_id not in seen:
 
@@ -110,23 +116,28 @@ for store in stores:
 f"""
 🚨 POKÉMON MSRP ALERT 🚨
 
+Product:
+{title}
+
 Store:
 {store['name']}
 
-Possible sealed product activity detected!
-
 Link:
-{store['url']}
+{product_url}
 
 Detected:
 {datetime.now()}
 """
                 )
 
-                seen.append(product_id)
+                seen[product_id] = str(datetime.now())
+
 
     except Exception as e:
-        print(store["name"], e)
+        print(
+            store["name"],
+            e
+        )
 
 
 save_seen(seen)
