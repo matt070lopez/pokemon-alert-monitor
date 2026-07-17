@@ -1,0 +1,19 @@
+{
+  "mode": "aggressive",
+  "max_price": 999,
+  "sealed_only": true,
+  "ignore_marketplace": true,
+  "alert_new_products": true,
+  "alert_restock": true,
+  "alert_preorders": true,
+  "stores": [
+    "Pokemon Center",
+    "Walmart",
+    "Target",
+    "Best Buy",
+    "GameStop",
+    "Amazon",
+    "Costco",
+    "Sam's Club"
+  ]
+}
