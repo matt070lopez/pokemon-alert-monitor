@@ -13,7 +13,7 @@ from retailers import costco
 from retailers import samsclub
 
 
-WEBHOOK = "DISCORD_WEBHOOK"
+WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
 SEEN_FILE = "seen_products.json"
 
@@ -34,31 +34,84 @@ def save_seen(data):
         json.dump(data, f)
 
 
+def get_priority(name):
+
+    name = name.lower()
+
+    high_priority = [
+        "pokemon center",
+        "exclusive",
+        "151",
+        "mega",
+        "special",
+        "limited"
+    ]
+
+    medium_priority = [
+        "elite trainer box",
+        "etb",
+        "booster bundle",
+        "booster box"
+    ]
+
+    if any(x in name for x in high_priority):
+        return "🔴 HIGH"
+
+    if any(x in name for x in medium_priority):
+        return "🟡 MEDIUM"
+
+    return "🟢 NORMAL"
+
+
 def send_alert(product):
 
-    message = f"""
-🚨 POKÉMON MSRP ALERT 🚨
+    priority = get_priority(
+        product["name"]
+    )
 
-🔥 {product['name']}
+    payload = {
 
-Store:
-{product['store']}
+        "embeds": [
+            {
+                "title": "🚨 POKÉMON DROP FOUND 🚨",
 
-Status:
-Possible preorder/restock
+                "fields": [
+                    {
+                        "name": "🔥 Product",
+                        "value": product["name"],
+                        "inline": False
+                    },
+                    {
+                        "name": "🏪 Store",
+                        "value": product["store"],
+                        "inline": True
+                    },
+                    {
+                        "name": "⭐ Priority",
+                        "value": priority,
+                        "inline": True
+                    },
+                    {
+                        "name": "📦 Status",
+                        "value": "Possible preorder/restock",
+                        "inline": False
+                    }
+                ],
 
-Link:
-{product['link']}
+                "url": product["link"],
 
-Detected:
-{datetime.now()}
-"""
+                "footer": {
+                    "text":
+                    f"Detected {datetime.now()}"
+                }
+            }
+        ]
+    }
+
 
     requests.post(
         WEBHOOK,
-        json={
-            "content": message
-        }
+        json=payload
     )
 
 
@@ -66,6 +119,7 @@ seen = load_seen()
 
 
 retailers = [
+
     ("Pokémon Center", pokemon_center),
     ("Walmart", walmart),
     ("Target", target),
@@ -74,6 +128,7 @@ retailers = [
     ("Amazon", amazon),
     ("Costco", costco),
     ("Sam's Club", samsclub)
+
 ]
 
 
@@ -100,6 +155,7 @@ for store_name, retailer in retailers:
                         "link": item["link"]
                     }
                 )
+
 
                 seen[product_id] = str(
                     datetime.now()
