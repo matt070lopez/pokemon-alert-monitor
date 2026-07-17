@@ -1,0 +1,33 @@
+{
+  "categories": {
+    "elite trainer box": {
+      "msrp": 49.99,
+      "max": 55
+    },
+
+    "booster bundle": {
+      "msrp": 26.99,
+      "max": 30
+    },
+
+    "booster box": {
+      "msrp": 161.64,
+      "max": 175
+    },
+
+    "ultra premium collection": {
+      "msrp": 119.99,
+      "max": 130
+    },
+
+    "premium collection": {
+      "msrp": 59.99,
+      "max": 70
+    },
+
+    "collection": {
+      "msrp": 29.99,
+      "max": 40
+    }
+  }
+}
