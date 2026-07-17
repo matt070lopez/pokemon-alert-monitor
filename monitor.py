@@ -1,27 +1,31 @@
-import os
 import json
 import requests
 from datetime import datetime
 
 from retailers import pokemon_center
 from retailers import walmart
+from retailers import target
+from retailers import gamestop
+from retailers import bestbuy
 
 
-WEBHOOK = os.environ["DISCORD_WEBHOOK"]
+WEBHOOK = "YOUR_WEBHOOK_HERE"
 
 SEEN_FILE = "seen_products.json"
-SETTINGS_FILE = "settings.json"
 
 
-def load_file(filename, default):
+def load_seen():
+
     try:
-        with open(filename) as f:
+        with open(SEEN_FILE) as f:
             return json.load(f)
+
     except:
-        return default
+        return {}
 
 
 def save_seen(data):
+
     with open(SEEN_FILE, "w") as f:
         json.dump(data, f)
 
@@ -36,11 +40,8 @@ def send_alert(product):
 Store:
 {product['store']}
 
-Price:
-{product.get('price','Check link')}
-
 Status:
-{product.get('status','Possible preorder/restock')}
+Possible preorder/restock
 
 Link:
 {product['link']}
@@ -57,24 +58,19 @@ Detected:
     )
 
 
-seen = load_file(
-    SEEN_FILE,
-    {}
-)
-
-settings = load_file(
-    SETTINGS_FILE,
-    {}
-)
+seen = load_seen()
 
 
 retailers = [
-    pokemon_center,
-    walmart
+    ("Pokémon Center", pokemon_center),
+    ("Walmart", walmart),
+    ("Target", target),
+    ("GameStop", gamestop),
+    ("Best Buy", bestbuy)
 ]
 
 
-for retailer in retailers:
+for store_name, retailer in retailers:
 
     try:
 
@@ -82,24 +78,21 @@ for retailer in retailers:
 
         for item in products:
 
-            product = {
-                "name": item["name"],
-                "link": item["link"],
-                "store": retailer.__name__.split(".")[-1],
-                "status": "Possible preorder/restock"
-            }
-
-
             product_id = (
-                product["store"]
-                +
-                product["link"]
+                store_name +
+                item["link"]
             )
 
 
             if product_id not in seen:
 
-                send_alert(product)
+                send_alert(
+                    {
+                        "name": item["name"],
+                        "store": store_name,
+                        "link": item["link"]
+                    }
+                )
 
                 seen[product_id] = str(
                     datetime.now()
@@ -107,8 +100,9 @@ for retailer in retailers:
 
 
     except Exception as e:
+
         print(
-            retailer,
+            store_name,
             e
         )
 
