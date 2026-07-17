@@ -18,6 +18,7 @@ WATCHLIST_FILE = "watchlist.json"
 
 SEEN_FILE = "seen_products.json"
 PRICE_FILE = "price_rules.json"
+PACK_FILE = "pack_value_rules.json"
 
 
 def load_seen():
@@ -45,6 +46,43 @@ def load_seen():
 
     return "⚪ NO DATA"
 def load_prices():
+    pack_rules = load_pack_rules()
+    def pack_value(name, price=None):
+
+    if price is None:
+        return "⚪ UNKNOWN"
+
+    name = name.lower()
+
+    for product, data in pack_rules["pack_values"].items():
+
+        if product in name:
+
+            packs = data["packs"]
+
+            cost = price / packs
+
+            if cost <= 7:
+                return f"🟢 EXCELLENT (${cost:.2f}/pack)"
+
+            elif cost <= 10:
+                return f"🟡 GOOD (${cost:.2f}/pack)"
+
+            else:
+                return f"🔴 LOW (${cost:.2f}/pack)"
+
+
+    return "⚪ UNKNOWN"
+    def load_pack_rules():
+
+    try:
+        with open(PACK_FILE) as f:
+            return json.load(f)
+
+    except:
+        return {
+            "pack_values": {}
+        }
 
     try:
         with open(PRICE_FILE) as f:
@@ -144,9 +182,9 @@ def send_alert(product):
     "value": check_price(product["name"]),
     "inline": True
 },
-                        "name": "📦 Status",
-                        "value": "Possible preorder/restock",
-                        "inline": False
+                        "name": "📦 Pack Value",
+                        "value": "pack_value(product["name"]),
+                        "inline": True
                     }
                 ],
 
