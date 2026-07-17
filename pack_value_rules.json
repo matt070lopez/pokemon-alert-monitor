@@ -1,0 +1,27 @@
+{
+  "pack_values": {
+    "booster bundle": {
+      "packs": 6
+    },
+
+    "elite trainer box": {
+      "packs": 9
+    },
+
+    "booster box": {
+      "packs": 36
+    },
+
+    "ultra premium collection": {
+      "packs": 16
+    },
+
+    "premium collection": {
+      "packs": 6
+    },
+
+    "collection": {
+      "packs": 4
+    }
+  }
+}
