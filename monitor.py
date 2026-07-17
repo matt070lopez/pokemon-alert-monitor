@@ -35,8 +35,7 @@ def load_availability():
 def load_seen():
     prices = load_prices()
     def check_price(name, price=None):
-
-    if price is None:
+        if price is None:
         return "⚪ PRICE UNKNOWN"
 
     name = name.lower()
