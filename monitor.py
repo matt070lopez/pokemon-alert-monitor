@@ -73,8 +73,8 @@ def load_prices():
     return True
     def pack_value(name, price=None):
 
-    if price is None:
-        return "⚪ UNKNOWN"
+        if price is None:
+           return "⚪ UNKNOWN"
 
     name = name.lower()
 
