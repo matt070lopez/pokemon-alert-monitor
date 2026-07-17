@@ -14,11 +14,24 @@ from retailers import samsclub
 
 
 WEBHOOK = os.environ["DISCORD_WEBHOOK"]
+WATCHLIST_FILE = "watchlist.json"
 
 SEEN_FILE = "seen_products.json"
 
 
 def load_seen():
+def load_watchlist():
+
+    try:
+        with open(WATCHLIST_FILE) as f:
+            return json.load(f)
+
+    except:
+        return {
+            "watchlist": [],
+            "ignore": [],
+            "priority_sets": []
+        }  
 
     try:
         with open(SEEN_FILE) as f:
@@ -116,6 +129,21 @@ def send_alert(product):
 
 
 seen = load_seen()
+watchlist = load_watchlist()
+def should_alert(name):
+
+    name = name.lower()
+
+    for word in watchlist["ignore"]:
+
+        if word.lower() in name:
+            return False
+
+
+    return any(
+        word.lower() in name
+        for word in watchlist["watchlist"]
+    )
 
 
 retailers = [
@@ -146,7 +174,7 @@ for store_name, retailer in retailers:
             )
 
 
-            if product_id not in seen:
+           if product_id not in seen and should_alert(item["name"]):
 
                 send_alert(
                     {
