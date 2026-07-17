@@ -8,6 +8,9 @@ from retailers import walmart
 from retailers import target
 from retailers import gamestop
 from retailers import bestbuy
+from retailers import amazon
+from retailers import costco
+from retailers import samsclub
 
 
 WEBHOOK = "DISCORD_WEBHOOK"
@@ -67,7 +70,10 @@ retailers = [
     ("Walmart", walmart),
     ("Target", target),
     ("GameStop", gamestop),
-    ("Best Buy", bestbuy)
+    ("Best Buy", bestbuy),
+    ("Amazon", amazon),
+    ("Costco", costco),
+    ("Sam's Club", samsclub)
 ]
 
 
