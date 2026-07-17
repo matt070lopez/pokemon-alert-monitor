@@ -9,7 +9,7 @@ from retailers import gamestop
 from retailers import bestbuy
 
 
-WEBHOOK = "YOUR_WEBHOOK_HERE"
+WEBHOOK = "DISCORD_WEBHOOK"
 
 SEEN_FILE = "seen_products.json"
 
