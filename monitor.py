@@ -19,7 +19,18 @@ WATCHLIST_FILE = "watchlist.json"
 SEEN_FILE = "seen_products.json"
 PRICE_FILE = "price_rules.json"
 PACK_FILE = "pack_value_rules.json"
+AVAILABILITY_FILE = "availability_rules.json"
+def load_availability():
 
+    try:
+        with open(AVAILABILITY_FILE) as f:
+            return json.load(f)
+
+    except:
+        return {
+            "positive": [],
+            "negative": []
+        }
 
 def load_seen():
     prices = load_prices()
@@ -47,6 +58,20 @@ def load_seen():
     return "⚪ NO DATA"
 def load_prices():
     pack_rules = load_pack_rules()
+    availability = load_availability()
+    def check_availability(text):
+
+    text = text.lower()
+
+    for word in availability["negative"]:
+        if word in text:
+            return False
+
+    for word in availability["positive"]:
+        if word in text:
+            return True
+
+    return True
     def pack_value(name, price=None):
 
     if price is None:
@@ -251,7 +276,11 @@ for store_name, retailer in retailers:
             )
 
 
-           if product_id not in seen and should_alert(item["name"]):
+           if (
+    product_id not in seen
+    and should_alert(item["name"])
+    and check_availability(item["name"])
+):
 
                 send_alert(
                     {
