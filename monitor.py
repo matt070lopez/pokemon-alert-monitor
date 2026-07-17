@@ -208,7 +208,7 @@ def send_alert(product):
     "inline": True
 },
                         "name": "📦 Pack Value",
-                        "value": "pack_value(product["name"]),
+                        "value": pack_value(product["name"]),
                         "inline": True
                     }
                 ],
