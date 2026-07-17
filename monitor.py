@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -10,20 +11,21 @@ WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
 SEEN_FILE = "seen_products.json"
 CONFIG_FILE = "store_config.json"
+MSRP_FILE = "msrp_database.json"
 
 
 KEYWORDS = [
     "pokemon",
     "elite trainer box",
     "etb",
-    "booster",
-    "bundle",
+    "booster bundle",
+    "booster box",
+    "premium collection",
     "collection",
-    "premium",
-    "box",
     "tin",
     "blister"
 ]
+
 
 IGNORE = [
     "binder",
@@ -39,34 +41,28 @@ IGNORE = [
 def send_alert(message):
     requests.post(
         WEBHOOK,
-        json={
-            "content": message
-        }
+        json={"content": message}
     )
 
 
-def load_json(file):
+def load_file(filename, default):
     try:
-        with open(file) as f:
+        with open(filename) as f:
             return json.load(f)
     except:
-        return {}
+        return default
 
 
-def save_seen(data):
-    with open(SEEN_FILE, "w") as f:
-        json.dump(data, f)
-
-
-seen = load_json(SEEN_FILE)
-config = load_json(CONFIG_FILE)
+seen = load_file(SEEN_FILE, {})
+config = load_file(CONFIG_FILE, {})
+msrp = load_file(MSRP_FILE, {})
 
 
 for store in config.get("stores", []):
 
     try:
 
-        response = requests.get(
+        r = requests.get(
             store["url"],
             headers={
                 "User-Agent": "Mozilla/5.0"
@@ -75,42 +71,79 @@ for store in config.get("stores", []):
         )
 
         soup = BeautifulSoup(
-            response.text,
+            r.text,
             "lxml"
         )
 
-        links = soup.find_all("a", href=True)
+        for a in soup.find_all("a", href=True):
 
-        for link in links:
-
-            title = link.get_text(" ", strip=True)
+            title = a.get_text(
+                " ",
+                strip=True
+            )
 
             if not title:
                 continue
 
-            title_lower = title.lower()
 
-            if not any(k in title_lower for k in KEYWORDS):
+            lower = title.lower()
+
+
+            if not any(k in lower for k in KEYWORDS):
                 continue
 
-            if any(i in title_lower for i in IGNORE):
+
+            if any(i in lower for i in IGNORE):
                 continue
 
 
-            product_url = urljoin(
+            price_match = re.search(
+                r"\$(\d+\.\d{2})",
+                title
+            )
+
+
+            price = None
+
+            if price_match:
+                price = float(
+                    price_match.group(1)
+                )
+
+
+            allowed = False
+
+
+            for product_type, data in msrp.get("products", {}).items():
+
+                if product_type in lower:
+
+                    if price is None:
+                        allowed = True
+
+                    elif price <= data["max_price"]:
+                        allowed = True
+
+
+            if not allowed:
+                continue
+
+
+            link = urljoin(
                 store["url"],
-                link["href"]
+                a["href"]
             )
 
 
             product_id = (
                 store["name"]
                 +
-                product_url
+                link
             )
 
 
             if product_id not in seen:
+
 
                 send_alert(
 f"""
@@ -122,13 +155,17 @@ Product:
 Store:
 {store['name']}
 
+Price:
+{price if price else "Check link"}
+
 Link:
-{product_url}
+{link}
 
 Detected:
 {datetime.now()}
 """
                 )
+
 
                 seen[product_id] = str(datetime.now())
 
@@ -140,4 +177,8 @@ Detected:
         )
 
 
-save_seen(seen)
+with open(SEEN_FILE, "w") as f:
+    json.dump(
+        seen,
+        f
+    )
