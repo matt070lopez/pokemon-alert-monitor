@@ -1,76 +1,85 @@
-import requests
 import os
+import json
+import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
 
 WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
-products = [
+STORES = [
     {
-        "store": "Pokémon Center",
-        "url": "https://www.pokemoncenter.com/en-us/category/tcg",
+        "name": "Walmart",
+        "url": "https://www.walmart.com/search?q=pokemon+cards"
     },
     {
-        "store": "Walmart",
-        "url": "https://www.walmart.com/search?q=pokemon+cards",
-    },
-    {
-        "store": "Target",
-        "url": "https://www.target.com/s?searchTerm=pokemon+cards",
+        "name": "Target",
+        "url": "https://www.target.com/s?searchTerm=pokemon+cards"
     }
 ]
 
-
-keywords = [
+KEYWORDS = [
     "pokemon",
-    "elite trainer",
-    "booster",
-    "box",
-    "bundle",
-    "collection",
-    "premium",
-    "etb"
+    "elite trainer box",
+    "booster bundle",
+    "booster box",
+    "premium collection",
+    "pokemon center"
+]
+
+IGNORE = [
+    "case",
+    "sleeves",
+    "binder",
+    "protector"
 ]
 
 
-def send_alert(message):
+def alert(message):
     requests.post(
         WEBHOOK,
-        json={
-            "content": message
-        }
+        json={"content": message}
     )
 
 
-for item in products:
+def check_store(store):
+
     try:
         r = requests.get(
-            item["url"],
+            store["url"],
             headers={
-                "User-Agent":"Mozilla/5.0"
+                "User-Agent": "Mozilla/5.0"
             },
-            timeout=10
+            timeout=15
         )
 
-        text = r.text.lower()
+        soup = BeautifulSoup(r.text, "lxml")
+        text = soup.get_text(" ").lower()
 
         found = []
 
-        for word in keywords:
+        for word in KEYWORDS:
             if word in text:
                 found.append(word)
 
+        for word in IGNORE:
+            if word in text:
+                return
+
         if found:
-            send_alert(
-                f"""
-🚨 Pokémon Alert
+            alert(
+f"""
+🚨 POKÉMON DROP ALERT 🚨
 
 Store:
-{item['store']}
+{store['name']}
 
-Possible product activity detected!
+Possible MSRP product activity detected!
 
 Keywords:
 {', '.join(found)}
+
+Link:
+{store['url']}
 
 Time:
 {datetime.now()}
@@ -79,3 +88,7 @@ Time:
 
     except Exception as e:
         print(e)
+
+
+for store in STORES:
+    check_store(store)
